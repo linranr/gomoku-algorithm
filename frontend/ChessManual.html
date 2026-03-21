@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>棋谱导出</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        :root {
+            --bg-color: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #263238;
+            --button-bg: #e0e0e0;
+            --button-hover: #bdbdbd;
+            --button-text: #263238;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: linear-gradient(135deg, #263238 0%, #37474f 100%);
+            --card-bg: rgba(45, 55, 64, 0.95);
+            --text-color: #eceff1;
+            --button-bg: #455a64;
+            --button-hover: #607d8b;
+            --button-text: #eceff1;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .main-container {
+            background: var(--card-bg);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--text-color);
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .menu-button {
+            background: var(--button-bg);
+            border: none;
+            border-radius: 20px;
+            padding: 20px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--button-text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px;
+        }
+
+        .menu-button:hover {
+            background: var(--button-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .menu-button:active {
+            transform: translateY(0);
+        }
+
+        .menu-button.primary {
+            background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
+            color: white;
+        }
+
+        .menu-button.primary:hover {
+            background: linear-gradient(135deg, #29b6f6 0%, #03a9f4 100%);
+        }
+
+        .preview-area {
+            background: var(--button-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            max-height: 400px;
+            overflow-y: auto;
+            color: var(--text-color);
+        }
+
+        .preview-canvas {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-text {
+            color: var(--text-color);
+            opacity: 0.7;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+
+        .no-data {
+            color: #000000;
+            font-size: 1.1rem;
+            margin: 20px 0;
+        }
+
+        .header-info {
+            background: var(--button-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: left;
+            color: var(--text-color);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 30px;
+                border-radius: 20px;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .menu-button {
+                padding: 15px 30px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <h1 class="logo">📋 棋谱导出</h1>
+        <p class="subtitle">查看并导出对局记录</p>
+
+        <div id="headerInfo" class="header-info" style="display: none;"></div>
+
+        <div id="previewArea" class="preview-area">
+            <canvas id="previewCanvas" class="preview-canvas" style="display: none;"></canvas>
+        </div>
+
+        <div id="buttonArea">
+            <button id="exportBtn" class="menu-button primary" onclick="exportGameRecord()" style="display: inline-flex;">
+                📥 导出棋谱
+            </button>
+            <button id="backToGameBtn" class="menu-button" onclick="goBackToGame()">
+                ◀️ 返回对局
+            </button>
+            <button class="menu-button" onclick="goHome()">
+                🏠 返回首页
+            </button>
+        </div>
+
+        <p id="infoText" class="info-text"></p>
+    </div>
+
+    <script>
+        /**
+         * 游戏数据对象
+         */
+        let gameData = null;
+
+        /**
+         * 加载游戏数据
+         * 从本地存储中读取游戏数据并显示预览
+         */
+        function loadGameData() {
+            const exportBtn = document.getElementById('exportBtn');
+            try {
+                const storedData = localStorage.getItem('gomokuGameData');
+                if (storedData) {
+                    gameData = JSON.parse(storedData);
+                    console.log('加载到游戏数据:', gameData);
+                    displayPreview();
+                } else {
+                    console.log('未找到游戏数据');
+                    document.getElementById('previewArea').innerHTML = '<p class="no-data">棋局未启，无谱可录。</p>';
+                    exportBtn.style.display = 'none';
+                    document.getElementById('infoText').textContent = '';
+                    document.getElementById('headerInfo').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('加载游戏数据出错:', error);
+                document.getElementById('previewArea').innerHTML = '<p class="no-data">数据加载失败</p>';
+                exportBtn.style.display = 'none';
+                document.getElementById('infoText').textContent = '数据加载出错，请重试';
+                document.getElementById('headerInfo').style.display = 'none';
+            }
+        }
+
+        /**
+         * 显示游戏预览
+         * 生成游戏信息和预览棋盘
+         */
+        function displayPreview() {
+            const exportBtn = document.getElementById('exportBtn');
+            if (!gameData || !gameData.moveHistory || gameData.moveHistory.length === 0) {
+                document.getElementById('previewArea').innerHTML = '<p class="no-data">棋局未启，无谱可录。</p>';
+                exportBtn.style.display = 'none';
+                document.getElementById('infoText').textContent = '';
+                document.getElementById('headerInfo').style.display = 'none';
+                return;
+            }
+
+            const headerInfo = document.getElementById('headerInfo');
+            const headerContent = generateHeaderContent(gameData);
+            headerInfo.innerHTML = headerContent;
+            headerInfo.style.display = 'block';
+
+            drawPreviewBoard();
+            exportBtn.style.display = 'inline-flex';
+            document.getElementById('infoText').textContent = `共 ${gameData.moveHistory.length} 步记录`;
+        }
+
+        /**
+         * 生成头部信息内容
+         * @param {Object} data - 游戏数据
+         * @returns {string} 头部信息HTML
+         */
+        function generateHeaderContent(data) {
+            const history = data.moveHistory;
+            const gameOver = data.gameOver;
+            const winner = data.winner;
+            const gameMode = data.gameMode || 'pvai';
+
+            let lines = [];
+
+            if (gameOver && winner) {
+                let winnerName = '';
+                if (gameMode === 'pvai') {
+                    const playerColor = data.playerColor;
+                    const aiColor = data.aiColor;
+                    if (winner === playerColor) {
+                        winnerName = '玩家';
+                    } else if (winner === aiColor) {
+                        winnerName = 'AI';
+                    } else {
+                        winnerName = '未知';
+                    }
+                } else if (gameMode === 'pvp') {
+                    winnerName = `玩家${winner}`;
+                } else {
+                    winnerName = '未知';
+                }
+                lines.push(`<strong>弈局终章：${winnerName}获胜</strong>`);
+            } else {
+                lines.push('<strong>弈局终章：棋罢不知人换世……</strong>');
+            }
+
+            lines.push(`总步数：${history.length}步`);
+
+            return lines.join('<br>');
+        }
+
+        /**
+         * 绘制预览棋盘
+         * 使用Canvas绘制棋盘和棋子
+         */
+        function drawPreviewBoard() {
+            const canvas = document.getElementById('previewCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            const boardSize = 15; // 棋盘大小
+            const cellSize = 28; // 单元格大小
+            const margin = cellSize; // 边距
+            const canvasSize = cellSize * (boardSize - 1) + margin * 2; // 画布大小
+            
+            // 设置画布大小
+            canvas.width = canvasSize;
+            canvas.height = canvasSize;
+            canvas.style.display = 'block';
+            canvas.style.maxWidth = '100%';
+            
+            // 绘制棋盘背景
+            ctx.fillStyle = '#e0c9a5';
+            ctx.fillRect(0, 0, canvasSize, canvasSize);
+            
+            // 绘制棋盘网格
+            ctx.strokeStyle = '#8b5a2b';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < boardSize; i++) {
+                // 绘制垂直线
+                ctx.beginPath();
+                ctx.moveTo(margin + i * cellSize, margin);
+                ctx.lineTo(margin + i * cellSize, canvasSize - margin);
+                ctx.stroke();
+                // 绘制水平线
+                ctx.beginPath();
+                ctx.moveTo(margin, margin + i * cellSize);
+                ctx.lineTo(canvasSize - margin, margin + i * cellSize);
+                ctx.stroke();
+            }
+            
+            // 绘制星位点
+            const starPoints = [3, 7, 11];
+            ctx.fillStyle = '#8b5a2b';
+            for (let r of starPoints) {
+                for (let c of starPoints) {
+                    ctx.beginPath();
+                    ctx.arc(margin + c * cellSize, margin + r * cellSize, 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+            
+            // 绘制棋子
+            const history = gameData.moveHistory;
+            const playerColor = gameData.playerColor;
+            const aiColor = gameData.aiColor;
+            
+            for (let i = 0; i < history.length; i++) {
+                const move = history[i];
+                const row = move.row;
+                const col = move.col;
+                const stepNumber = i + 1;
+                
+                let pieceColor;
+                if (gameData.gameMode === 'pvai') {
+                    pieceColor = move.player === 'human' ? playerColor : aiColor;
+                } else {
+                    pieceColor = parseInt(move.player);
+                }
+                
+                const x = margin + col * cellSize;
+                const y = margin + row * cellSize;
+                const radius = cellSize * 0.42;
+                
+                // 绘制棋子
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = pieceColor === 1 ? '#000000' : '#ffffff';
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // 绘制步数
+                ctx.font = `bold ${Math.floor(radius * 1.1)}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = pieceColor === 1 ? '#ffffff' : '#000000';
+                ctx.fillText(stepNumber.toString(), x, y + 1);
+            }
+        }
+
+        /**
+         * 导出棋谱
+         * 将棋局记录导出为PNG图片
+         */
+        function exportGameRecord() {
+            loadGameData();
+            
+            if (!gameData || !gameData.moveHistory || gameData.moveHistory.length === 0) {
+                alert('没有对局记录可导出');
+                return;
+            }
+
+            try {
+                const boardSize = 15;
+                const cellSize = 30;
+                const margin = cellSize;
+                const boardCanvasSize = cellSize * (boardSize - 1) + margin * 2;
+                
+                const headerHeight = 60;
+                const footerHeight = 40;
+                const totalHeight = headerHeight + boardCanvasSize + footerHeight;
+                const totalWidth = boardCanvasSize;
+                
+                // 创建导出画布
+                const exportCanvas = document.createElement('canvas');
+                exportCanvas.width = totalWidth;
+                exportCanvas.height = totalHeight;
+                const ctx = exportCanvas.getContext('2d');
+                
+                // 绘制背景
+                ctx.fillStyle = '#e0c9a5';
+                ctx.fillRect(0, 0, totalWidth, totalHeight);
+                
+                const history = gameData.moveHistory;
+                const gameOver = gameData.gameOver;
+                const winner = gameData.winner;
+                const gameMode = gameData.gameMode || 'pvai';
+                
+                // 绘制头部信息
+                ctx.fillStyle = '#5d4037';
+                ctx.font = 'bold 18px Microsoft YaHei, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                let headerText = '';
+                if (gameOver && winner) {
+                    let winnerName = '';
+                    if (gameMode === 'pvai') {
+                        const playerColor = gameData.playerColor;
+                        const aiColor = gameData.aiColor;
+                        if (winner === playerColor) {
+                            winnerName = '玩家';
+                        } else if (winner === aiColor) {
+                            winnerName = 'AI';
+                        } else {
+                            winnerName = '未知';
+                        }
+                    } else if (gameMode === 'pvp') {
+                        winnerName = `玩家${winner}`;
+                    } else {
+                        winnerName = '未知';
+                    }
+                    headerText = `弈局终章：${winnerName}获胜  |  总步数：${history.length}步`;
+                } else {
+                    headerText = `弈局终章：棋罢不知人换世……  |  总步数：${history.length}步`;
+                }
+                ctx.fillText(headerText, totalWidth / 2, headerHeight / 2);
+                
+                // 保存当前状态
+                ctx.save();
+                // 平移坐标系到棋盘位置
+                ctx.translate(0, headerHeight);
+                
+                // 绘制棋盘背景
+                ctx.fillStyle = '#e0c9a5';
+                ctx.fillRect(0, 0, boardCanvasSize, boardCanvasSize);
+                
+                // 绘制棋盘网格
+                ctx.strokeStyle = '#8b5a2b';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < boardSize; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(margin + i * cellSize, margin);
+                    ctx.lineTo(margin + i * cellSize, boardCanvasSize - margin);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(margin, margin + i * cellSize);
+                    ctx.lineTo(boardCanvasSize - margin, margin + i * cellSize);
+                    ctx.stroke();
+                }
+                
+                // 绘制星位点
+                const starPoints = [3, 7, 11];
+                ctx.fillStyle = '#8b5a2b';
+                for (let r of starPoints) {
+                    for (let c of starPoints) {
+                        ctx.beginPath();
+                        ctx.arc(margin + c * cellSize, margin + r * cellSize, 4, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
+                }
+                
+                const playerColor = gameData.playerColor;
+                const aiColor = gameData.aiColor;
+                
+                // 绘制棋子
+                for (let i = 0; i < history.length; i++) {
+                    const move = history[i];
+                    const row = move.row;
+                    const col = move.col;
+                    const stepNumber = i + 1;
+                    
+                    let pieceColor;
+                    if (gameMode === 'pvai') {
+                        pieceColor = move.player === 'human' ? playerColor : aiColor;
+                    } else {
+                        pieceColor = parseInt(move.player);
+                    }
+                    
+                    const x = margin + col * cellSize;
+                    const y = margin + row * cellSize;
+                    const radius = cellSize * 0.42;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                    ctx.fillStyle = pieceColor === 1 ? '#000000' : '#ffffff';
+                    ctx.fill();
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    
+                    ctx.font = `bold ${Math.floor(radius * 1.1)}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = pieceColor === 1 ? '#ffffff' : '#000000';
+                    ctx.fillText(stepNumber.toString(), x, y + 1);
+                }
+                
+                // 恢复状态
+                ctx.restore();
+                
+                // 绘制时间
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const timeText = `${year}-${month}-${day} ${hours}:${minutes}`;
+                
+                ctx.fillStyle = '#5d4037';
+                ctx.font = '14px Microsoft YaHei, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(timeText, totalWidth / 2, headerHeight + boardCanvasSize + footerHeight / 2);
+                
+                const fileName = `ChessManual ${hours}${minutes}.png`;
+                
+                // 导出为PNG图片
+                exportCanvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 'image/png');
+
+            } catch (error) {
+                console.error('导出棋谱失败:', error);
+                alert('导出棋谱失败，请重试');
+            }
+        }
+
+        /**
+         * 返回游戏页面
+         */
+        function goBackToGame() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        /**
+         * 返回首页
+         * 清除游戏数据并跳转到首页
+         */
+        function goHome() {
+            localStorage.removeItem('gomokuGameData');
+            window.location.href = 'index.html';
+        }
+
+        // 页面加载完成后加载游戏数据
+        window.onload = loadGameData;
+    </script>
+</body>
+</html>

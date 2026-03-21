@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 趣味登录系统</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container login-container">
+        <div class="form-card">
+            <h2 class="form-title">登录</h2>
+            <form id="loginForm" onsubmit="return false;">
+                <div class="form-group">
+                    <label for="username">账号</label>
+                    <input type="text" id="username" class="form-input" placeholder="请输入账号" required>
+                    <span class="input-hint">请输入您的账号</span>
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" class="form-input" placeholder="请输入密码" required>
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password', this)">
+                            <span class="eye-icon">👁️</span>
+                        </button>
+                    </div>
+                    <span class="input-hint">请输入您的密码</span>
+                </div>
+                <button type="button" class="submit-btn" onclick="handleLogin()">
+                    登录
+                </button>
+                <div class="button-row">
+                    <button type="button" class="secondary-btn" onclick="navigateToRegister()">
+                        注册
+                    </button>
+                    <button type="button" class="secondary-btn" onclick="handleForgotPassword()">
+                        忘记密码
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <p id="modal-message"></p>
+        </div>
+    </div>
+    <div id="ban-overlay" class="ban-overlay">
+        <div class="ban-content">
+            <p class="ban-message">你已被禁言30秒</p>
+            <div class="countdown" id="countdown">30</div>
+        </div>
+    </div>
+    <script src="../js/script.js"></script>
+</body>
+</html>
