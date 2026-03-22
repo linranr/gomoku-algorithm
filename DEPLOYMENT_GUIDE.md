@@ -16,7 +16,6 @@
 - Python 3.8+（推荐3.13.12）
 - Flask Web框架
 - Flask-CORS (跨域支持)
-- Pygame (音效播放)
 
 ### AI算法
 - 随机算法（简单难度）
@@ -90,7 +89,7 @@ python -m venv .venv
 
 安装项目依赖：
 ```bash
-pip install flask flask-cors pygame
+pip install flask flask-cors
 ```
 
 ## 服务器启动
@@ -217,7 +216,7 @@ ModuleNotFoundError: No module named 'flask'
 ```
 **解决方案**：
 ```bash
-pip install flask flask-cors pygame
+pip install flask flask-cors
 ```
 
 ### 游戏问题

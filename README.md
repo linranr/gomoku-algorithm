@@ -214,7 +214,6 @@ Gomoku/
 - Python 3.8+（推荐3.13.12）
 - Flask Web框架
 - Flask-CORS (跨域支持)
-- Pygame (音效播放)
 
 ### AI算法
 - 随机算法（简单难度）

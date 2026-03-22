@@ -5,7 +5,6 @@ from flask import Flask, request, jsonify, send_from_directory, abort #1
 from flask_cors import CORS
 import sys  #1
 import os  #1
-import pygame
 
 
 # ===================== 适配打包的路径函数=====================
@@ -48,20 +47,6 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})  # 允许跨域请求
 board = Board()
 ai = None  # AI 实例动态创建
 
-# 初始化 pygame 混音器
-pygame.mixer.init()
-
-# ===================== 音效路径适配 =====================
-# 原有：SOUND_PATH = os.path.join(PROJECT_ROOT, 'static', 'sounds', 'luozi.mp3')
-SOUND_PATH = get_resource_path(os.path.join('static', 'sounds', 'luozi.mp3'))
-# =====================================================================
-
-# 加载音效
-try:
-    fall_sound = pygame.mixer.Sound(SOUND_PATH)
-except Exception as e:
-    print(f"加载音效失败：{e}")
-    fall_sound = None
 
 
 @app.route('/api/restart', methods=['POST'])
