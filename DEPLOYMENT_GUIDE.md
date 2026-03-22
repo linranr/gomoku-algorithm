@@ -102,19 +102,9 @@ python main.py
 
 ### 端口配置
 
-**重要说明**：服务器默认使用80端口，需要管理员权限运行。
+**重要说明**：服务器默认使用5000端口。
 
-#### Windows
-- 右键点击命令提示符或PowerShell
-- 选择"以管理员身份运行"
-- 执行 `python main.py`
-
-#### Linux/macOS
-```bash
-sudo python main.py
-```
-
-### 修改端口
+#### 修改端口
 
 如果需要使用其他端口，修改 `main.py` 文件：
 ```python
@@ -126,14 +116,14 @@ app.run(debug=True, host='0.0.0.0', port=8080)  # 修改为8080端口
 启动成功后，可以通过以下方式访问：
 
 1. **本地访问**
-   - http://localhost
-   - http://127.0.0.1
+   - http://localhost:5000
+   - http://127.0.0.1:5000
 
 2. **局域网访问**
    - 查看本机IP地址：
      - Windows: `ipconfig`
      - Linux/macOS: `ifconfig` 或 `ip addr`
-   - 访问：http://[你的IP地址]
+   - 访问：http://[你的IP地址]:5000
 
 3. **直接打开文件**
    - 浏览器打开 `frontend/index.html`
@@ -198,9 +188,8 @@ pyinstaller --onefile --add-data "frontend;frontend" --add-data "backend;backend
 OSError: [WinError 10048] 通常每个套接字地址
 ```
 **解决方案**：
-- 检查80端口是否被其他程序占用
+- 检查5000端口是否被其他程序占用
 - 修改 `main.py` 使用其他端口
-- 或以管理员身份运行程序
 
 **问题2：权限不足**
 ```
@@ -259,13 +248,13 @@ pip install flask flask-cors
 
 1. **使用生产环境**
 ```python
-app.run(host='0.0.0.0', port=80, debug=False)
+app.run(host='0.0.0.0', port=5000, debug=False)
 ```
 
 2. **使用Gunicorn（Linux/macOS）**
 ```bash
 pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:80 main:app
+gunicorn -w 4 -b 0.0.0.0:5000 main:app
 ```
 
 3. **使用Nginx反向代理**
@@ -275,7 +264,7 @@ server {
     server_name your-domain.com;
     
     location / {
-        proxy_pass http://127.0.0.1:8000;
+        proxy_pass http://127.0.0.1:5000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
