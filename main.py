@@ -20,8 +20,7 @@ if __name__ == '__main__':
     # 启动前先打开浏览器
     open_browser()
 
-    print("正在启动服务器，监听端口 80...")
-    print("提示：如果启动失败，请以管理员身份运行此程序")
+    print("正在启动服务器，https://gomoku-algorithm-production.up.railway.app/")
     # 本地开发环境配置（已注释）
     # app.run(debug=True, host='0.0.0.0', port=5000)
     
