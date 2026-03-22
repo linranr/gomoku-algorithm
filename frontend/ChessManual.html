@@ -2,6 +2,9 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>棋谱导出</title>
     <style>
         * {
@@ -157,6 +160,54 @@
             .menu-button {
                 padding: 15px 30px;
                 font-size: 1rem;
+            }
+        }
+        
+        /**适配手机**/
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .main-container {
+                padding: 20px;
+                border-radius: 15px;
+            }
+            .logo {
+                font-size: 1.8rem;
+                margin-bottom: 10px;
+            }
+            .subtitle {
+                font-size: 0.9rem;
+                margin-bottom: 20px;
+            }
+            .menu-button {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+            .preview-area {
+                padding: 15px;
+                font-size: 0.85rem;
+            }
+            .header-info {
+                padding: 12px;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .logo {
+                font-size: 1.5rem;
+            }
+            .subtitle {
+                font-size: 0.8rem;
+            }
+            .menu-button {
+                padding: 10px 15px;
+                font-size: 0.85rem;
+            }
+            .preview-area {
+                padding: 10px;
+                font-size: 0.8rem;
             }
         }
     </style>

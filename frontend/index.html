@@ -2,6 +2,9 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>五子棋 · 首页</title>
     <style>
         * {
@@ -442,6 +445,75 @@
                 font-size: 1.1rem;
             }
             .download-menu-text {
+                font-size: 0.85rem;
+            }
+        }
+
+        /**适配手机**/
+        @media (max-width: 360px) {
+            body {
+                padding: 5px;
+            }
+            .main-container {
+                padding: 15px;
+                border-radius: 12px;
+            }
+            .logo {
+                font-size: 1.6rem;
+                margin-bottom: 10px;
+            }
+            .subtitle {
+                font-size: 0.8rem;
+                margin-bottom: 15px;
+            }
+            .menu-buttons {
+                gap: 8px;
+                margin-bottom: 15px;
+            }
+            .menu-button {
+                padding: 10px;
+                font-size: 0.85rem;
+            }
+            .top-buttons {
+                top: 5px;
+                left: 5px;
+                right: 5px;
+            }
+            .top-button {
+                padding: 5px 10px;
+                font-size: 0.7rem;
+            }
+            .top-button-icon {
+                font-size: 0.8rem;
+            }
+            .download-menu {
+                top: 45px;
+                right: 5px;
+                min-width: 160px;
+                padding: 10px;
+            }
+            .download-menu-title {
+                font-size: 0.85rem;
+            }
+            .download-menu-item {
+                padding: 6px;
+            }
+            .download-menu-icon {
+                font-size: 1rem;
+            }
+            .download-menu-text {
+                font-size: 0.8rem;
+            }
+            .custom-alert-content {
+                padding: 15px;
+                border-radius: 12px;
+            }
+            .custom-alert-message {
+                font-size: 0.9rem;
+                margin-bottom: 12px;
+            }
+            .custom-alert-button {
+                padding: 6px 14px;
                 font-size: 0.85rem;
             }
         }
